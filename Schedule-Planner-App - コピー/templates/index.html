@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">今日のタスクを入力</h2>
+
+<div class="bg-white p-6 rounded-none shadow-sm border max-w-2xl mb-8">
+    <div class="flex gap-2 mb-4">
+        <input type="text" id="taskName" placeholder="例：読書" class="flex-1 border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
+        <input type="number" id="taskDuration" value="60" class="w-20 border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
+        <button onclick="addTask()" class="bg-indigo-300 text-black px-6 py-2 border-2 border-black font-bold shadow-[1px_1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">追加</button>
+    </div>
+
+    <div id="taskList" class="space-y-2 mb-6"></div>
+
+    <button id="genBtn" onclick="generate()" class="w-full bg-indigo-500 text-white py-3 rounded-lg font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-200">
+        スケジュール作成
+    </button>
+</div>
+
+<div id="resultArea" class="hidden max-w-2xl">
+    <h3 class="font-bold text-lg mb-4 text-gray-700 flex items-center gap-2">
+        <i class="fa-solid fa-sparkles"></i> 今日のスケジュール
+    </h3>
+    <div id="scheduleList" class="space-y-3 bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm">
+        </div>
+</div>
+
+<script id="init-schedule" type="application/json">
+    {{ schedule | tojson | safe if schedule else '[]' }}
+</script>
+
+<script>
+let tasks = [];
+
+function addTask() {
+    const name = document.getElementById('taskName').value;
+    const duration = document.getElementById('taskDuration').value;
+    if(!name) return;
+    tasks.push({name, duration});
+    const item = document.createElement('div');
+    item.className = "bg-gray-50 p-2 border-l-4 border-indigo-400 text-sm flex justify-between";
+    item.innerHTML = `<span>${name}</span> <span class="text-gray-500">${duration}分</span>`;
+    document.getElementById('taskList').appendChild(item);
+    document.getElementById('taskName').value = "";
+}
+
+async function generate() {
+    if(tasks.length === 0) return alert("タスクを入力してください");
+    const btn = document.getElementById('genBtn');
+    btn.innerText = "AI思考中...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({tasks})
+        });
+
+        if(res.ok) {
+            const data = await res.json();
+            renderResult(data.schedule);
+            document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+        }
+    } catch(e) {
+        alert("エラーが発生しました");
+    } finally {
+        btn.innerText = "AIでスケジュールを作成";
+        btn.disabled = false;
+    }
+}
+
+function renderResult(schedule) {
+    const area = document.getElementById('resultArea');
+    const list = document.getElementById('scheduleList');
+    list.innerHTML = "";
+    area.classList.remove('hidden');
+
+    if (!schedule || schedule.length === 0) return;
+
+    schedule.forEach(item => {
+        const div = document.createElement('div'); //タイプごとの色分け
+
+        let bgClass = "bg-indigo-50 border-indigo-100";
+        let badgeClass = "bg-indigo-100 text-indigo-600";
+        
+        if (item.type === 'fixed') {
+            bgClass = "bg-orange-50 border-orange-100";
+            badgeClass = "bg-orange-100 text-orange-600";
+        }
+
+        div.className = `flex gap-4 items-center p-3 rounded-xl shadow-sm border ${bgClass}`;
+        div.innerHTML = `
+            <span class="font-mono text-gray-500 font-bold w-12 text-sm">${item.time}</span>
+            <span class="font-bold text-gray-700 flex-1">${item.task}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-bold ${badgeClass}">${item.type.toUpperCase()}</span>
+        `;
+        list.appendChild(div);
+    });
+}
+
+
+window.onload = () => { //ページ読み込み時に、今日のデータがあれば表示する
+    const initData = JSON.parse(document.getElementById('init-schedule').textContent);
+    if(initData.length > 0) {
+        renderResult(initData);
+    }
+};
+</script>
+{% endblock %}

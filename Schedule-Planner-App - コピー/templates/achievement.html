@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ today }} の進捗</h2>
+        <div class="flex justify-between items-end mb-2">
+            <span id="progressText" class="text-indigo-600 font-bold">0% 完了</span>
+            <span class="text-xs text-gray-400">今日のタスクを全て達成して果実をゲット！</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div id="progressBar" class="bg-indigo-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div id="taskContainer" class="space-y-4 mb-16">
+        </div>
+
+    <div class="bg-white rounded-3xl p-8 text-center relative overflow-hidden min-h-[500px] border border-gray-100 shadow-sm flex flex-col items-center">
+        <h3 class="text-gray-700 font-bold mb-4 relative z-10">タスクの木</h3>
+        
+        <div class="relative flex-1 w-full flex justify-center items-end">
+            <img src="{{ url_for('static', filename='tree.png') }}" alt="木の画像" class="w-full max-w-[32rem] h-auto relative z-0 object-contain">
+
+            <div class="absolute left-1/2 transform -translate-x-1/2 w-60 h-40 flex flex-wrap justify-center items-center content-center p-4 gap-2 z-10" style="top: 10%; pointer-events: none;">
+                {% for fruit in my_fruits %}
+                <span class="text-3xl select-none filter drop-shadow-lg transform transition-transform hover:scale-110">{{ fruit }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="absolute bottom-6 right-8 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 text-gray-500 font-bold flex items-center gap-2 z-20">
+            <span class="text-sm">今月の収穫: <span class="text-lg text-gray-800">{{ month_fruits_count }}</span> / {{ days_in_month }}</span>
+        </div>
+        
+        <div id="newFruitAnim" class="absolute inset-0 pointer-events-none hidden z-50 flex items-center justify-center">
+            <div class="text-7xl animate-ping">✨</div>
+        </div>
+    </div>
+</div>
+
+<script id="schedule-data" type="application/json">
+    {{ schedule | tojson | safe if schedule else '[]' }}
+</script>
+<script id="fruit-status" type="application/json">
+    {{ today_fruit_earned | tojson | safe }}
+</script>
+
+<script>
+let schedule = JSON.parse(document.getElementById('schedule-data').textContent);
+let fruitEarned = JSON.parse(document.getElementById('fruit-status').textContent);
+
+renderTasks();
+updateProgress();
+
+function getGroupedTasks() {
+    // Todoのみ抽出し、タスク名でグループ化
+    const groups = {};
+    schedule.forEach((item, index) => {
+        if (item.type !== 'todo') return;
+        
+        if (!groups[item.task]) {
+            groups[item.task] = {
+                name: item.task,
+                indices: [], // 元の配列のインデックスを保存
+                isAllDone: true
+            };
+        }
+        groups[item.task].indices.push(index);
+        
+        // 1つでも未完了があれば、そのグループは未完了扱い
+        if (!item.done) {
+            groups[item.task].isAllDone = false;
+        }
+    });
+    return Object.values(groups);
+}
+
+function renderTasks() {
+    const container = document.getElementById('taskContainer');
+    container.innerHTML = '';
+
+    const groupedList = getGroupedTasks();
+
+    if (groupedList.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400">今日のTodoタスクはありません。</p>';
+        return;
+    }
+
+    groupedList.forEach(group => {
+        const isDone = group.isAllDone;
+        const bgClass = isDone ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100';
+        const iconClass = isDone ? 'fa-circle-check text-green-500' : 'fa-circle text-gray-200';
+        const opacity = isDone ? 'opacity-70' : 'opacity-100';
+
+        const div = document.createElement('div');
+        div.className = `${bgClass} ${opacity} p-5 rounded-xl shadow-sm border-2 transition-all cursor-pointer hover:shadow-md flex items-center justify-between group`;
+        
+        div.onclick = () => toggleGroup(group.indices, !isDone);
+
+        div.innerHTML = `
+            <div class="flex items-center gap-4">
+                <i class="fa-regular ${iconClass} text-2xl transition-colors group-hover:text-green-400"></i>
+                <div>
+                    <p class="font-bold text-gray-800 ${isDone ? 'line-through text-gray-500' : ''}">${group.name}</p>
+                </div>
+            </div>
+            <div class="text-xs font-bold px-2 py-1 rounded bg-indigo-50 text-indigo-500">
+                TODO
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// グループ単位で一括切り替え
+async function toggleGroup(indices, newState) {
+    // 1. ローカルの状態を一括更新
+    indices.forEach(index => {
+        schedule[index].done = newState;
+    });
+
+    // 2. UI再描画
+    renderTasks();
+    updateProgress();
+
+    // 3. APIへ一括送信
+    const promises = indices.map(index => 
+        fetch('/api/toggle_task', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ index: index, done: newState })
+        })
+    );
+    await Promise.all(promises);
+    
+    checkAllComplete();
+}
+
+function updateProgress() {
+    const groupedList = getGroupedTasks();
+    
+    if (groupedList.length === 0) {
+        document.getElementById('progressBar').style.width = `0%`;
+        document.getElementById('progressText').innerText = `タスクなし`;
+        return;
+    }
+
+    // すべて完了しているグループの数をカウント
+    const doneCount = groupedList.filter(g => g.isAllDone).length;
+    const totalCount = groupedList.length;
+    const percent = Math.round((doneCount / totalCount) * 100);
+    
+    document.getElementById('progressBar').style.width = `${percent}%`;
+    document.getElementById('progressText').innerText = `${doneCount} / ${totalCount} タスク完了 (${percent}%)`;
+    
+    if(percent === 100) {
+        document.getElementById('progressBar').classList.add('bg-green-500');
+        document.getElementById('progressBar').classList.remove('bg-indigo-500');
+    } else {
+        document.getElementById('progressBar').classList.add('bg-indigo-500');
+        document.getElementById('progressBar').classList.remove('bg-green-500');
+    }
+}
+
+async function checkAllComplete() {
+    const groupedList = getGroupedTasks();
+    // すべてのグループが完了しているか
+    const allDone = groupedList.length > 0 && groupedList.every(g => g.isAllDone);
+    
+    if (allDone && !fruitEarned) {
+        fruitEarned = true;
+        setTimeout(async () => {
+            const res = await fetch('/api/claim_fruit', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                const anim = document.getElementById('newFruitAnim');
+                anim.classList.remove('hidden');
+                setTimeout(() => {
+                    alert(`本日のやりたいタスクをすべて達成しました！\n「${data.fruit}」を獲得しました！`);
+                    location.reload();
+                }, 1500);
+            }
+        }, 500);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "schedule-planner-app-ef160",
+  "private_key_id": "59d25dbaf9132945031aeca9c145c965cf44fa16",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCd+pfe8BPflHfk\njBBQVd968VgHDaR2NFXUXM/N8H7Yth8MAZ5oLlR46P+joglAF+th4RTacN03wBMK\n4WI8Sp/eQPubENKRapFX8WAc6GRo4Q0PFJQ3UXuGhbjm8rl1AD4EdM2bz9n7g8AL\nRzNKTVGfC/7lzt1HaYSK4E4+oUKTK15eCD5MkeF1gOfEPy/j1vxvMwXYuT2VHu5H\nt76+iLq6sUgSaXjaF3OAbZcp+STrzPrt9bbxArtVnnbWhCfrg2unqTvYaTtnxkr3\nDDZCkYleSkmn+2jl3+zWR8vVV9RSdZN4x5MNb0Jo9JexrU1XtFx0AgubKsibo2nk\nsPKbibeHAgMBAAECggEAECrcLgmdzwzPtEkNRltzco6OdrJTuXEjs4cIEUhiguUo\nij8EKh9Lr9AQkXt8vN11zl+NlcllKlZy3HMybX8pm0JFPZpcIluoojpmnq69z+nw\nPzHY9UxWeu7mfGQszKeIsUYO4LpF0bKrDbxsqFb/WmqM3JHuHWfUE65e85PnT05A\niwIoTjlTIHsJ8Q+GiH25dV3B/k4IIeDkdYEO9tMc/9k3vc58d7nPWJdNvGeDgs/X\nPvy5iqUQKiqd5ZzefAzzh5SoDmII8Bp3B0Mz67bcEZIHDXAE+ah7W5DoA4IjnxQi\nYmbvKRYntNVgFWA5Ka6i7OnyloAygmyW2tFwLYT1AQKBgQDeo/0h12CDZQHVoUsr\nHTdbReGIlyLedvbRx1+XWNEEGB9x0RxZom4w5RZQqpLYX3fw41qS0fVZV1KBB9PG\ngIwCxqVO27T6Nn5NqKNz1ACoh/XjfQicoYz82Nn2vVPbZ5tK7kXBAkS9vUOyEVJm\nnSG8FHg6j2V7tKzZTXpF3i4iBwKBgQC1plJI1XgoXjPJCfkIyHIiSK9fGalc8hIJ\nZtPhUshmZ7RlRhBO4ew+geVAemPSPfUoAr6KtKbn9UJNDZm+GG2ipYpyigptnbRF\nJqDSqCvkJDqmPGOSYG/oPWPsqp36x4R2K7icHCOn3O0N+wh5Q3RpWb3SZyfaQbm2\ncFilONRegQKBgArWRJ3/E82RfxNc9IG2vFkO/7lcUfAuLjlr0PVW92WRnwY1PYIH\nbAGpRPrMMrWhf/8TsfbvjVe57mQlc2N4IliIPsel3htHx8IT8VDUAuwxIgDetyqY\nmno8O+/Mq2ZElsSA8JhCegIaUk86lJ42C8xR2sBO9ouc8cTqBoecFvbFAoGAXN51\nvyr0TZ8r1qK0oZrpT0Hd9z8FabGRKyFZPh+2uTRX9FcHy2yR/bsnW/m2wyxOBHCy\nvfNySbEIfqBvc9LFapw71idhAX3ZRmljW5ADMJadLZQ+S/3l+NQ6HCt2rVoIDOp5\nbcatLAs1XypywJyODbaF5+Y5Z8qmifGSQJZ3bQECgYAbpX9U8/z0y9iWOciODz2y\n/69zU4j9YvKYKhTiGzltX6dkp/wK/ialeVRqElGfSrAJnNqtw0HmF5t2iOmc6HiQ\niFGYznmTYJdUimNH8M010FYgNtFvUYJkjsJh7aD0lEYwvFco//9avm8SrYTAGRmD\ng4a4pPws3wHrfYqlug81AA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@schedule-planner-app-ef160.iam.gserviceaccount.com",
+  "client_id": "106972869253173131708",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40schedule-planner-app-ef160.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">ルーティン設定</h2>
+            <p class="text-gray-500">あなたの性格や固定スケジュールを登録します</p>
+        </div>
+        <button onclick="saveAll()" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
+        </i> 設定を保存
+        </button>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-indigo-100 mb-8">
+        <h3 class="font-bold text-lg text-gray-700 mb-2 flex items-center gap-2">
+        </i> あなたの性格・特徴
+        </h3>
+        <p class="text-sm text-gray-400 mb-3">
+            AIがスケジュールを作成する際に考慮します。<br>
+            例：「朝の方が集中できる」「集中力が続かないので短時間で区切りたい」「夜はリラックスしたい」など
+        </p>
+        <textarea id="personalityInput" rows="3" 
+            class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none resize-none bg-gray-50"
+            placeholder="ここに性格や希望を入力してください...">{{ routines.personality }}</textarea>
+    </div>
+
+    <div class="flex border-b mb-6">
+        <button id="tab-weekday" onclick="switchTab('weekday')" class="px-6 py-3 font-bold border-b-2 border-indigo-500 text-indigo-600">平日</button>
+        <button id="tab-weekend" onclick="switchTab('weekend')" class="px-6 py-3 font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-600">休日 (土日)</button>
+    </div>
+
+    <div id="routineForm" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-indigo-100 mb-8">
+        <div class="grid grid-cols-2 gap-4">
+            <input type="text" id="rName" placeholder="予定名（例：仕事、趣味）" class="border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
+            <input type="text" id="rTime" placeholder="時間（例：9:00 - 18:00）" class="border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
+        </div>
+        <div class="flex gap-2 mt-4">
+            <button onclick="addRoutine()" class="flex-1 bg-indigo-500 text-white px-4 py-2 rounded font-bold hover:bg-indigo-600">リストに追加</button>
+            <button onclick="toggleForm()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">キャンセル</button>
+        </div>
+    </div>
+
+    <button id="addBtn" onclick="toggleForm()" class="w-full py-3 border-2 border-dashed border-indigo-200 text-indigo-400 rounded-xl hover:bg-indigo-50 hover:border-indigo-400 font-bold transition-all mb-8">
+        <i class="fa-solid fa-plus"></i> ルーティンを追加
+    </button>
+
+    <div id="routineContainer" class="space-y-4">
+        </div>
+</div>
+
+<script id="routines-data" type="application/json">
+    {{ routines | tojson | safe if routines else '{}' }}
+</script>
+
+<script>
+let allData = JSON.parse(document.getElementById('routines-data').textContent);
+if (!allData.weekday) allData.weekday = [];
+if (!allData.weekend) allData.weekend = [];
+if (!allData.personality) allData.personality = "";
+
+let currentTab = 'weekday';
+
+document.getElementById('personalityInput').value = allData.personality || "";
+renderList();
+
+function switchTab(type) {
+    currentTab = type;
+    
+    const wdBtn = document.getElementById('tab-weekday');
+    const weBtn = document.getElementById('tab-weekend');
+    
+    if(type === 'weekday') {
+        wdBtn.classList.add('border-indigo-500', 'text-indigo-600');
+        wdBtn.classList.remove('border-transparent', 'text-gray-400');
+        weBtn.classList.remove('border-indigo-500', 'text-indigo-600');
+        weBtn.classList.add('border-transparent', 'text-gray-400');
+    } else {
+        weBtn.classList.add('border-indigo-500', 'text-indigo-600');
+        weBtn.classList.remove('border-transparent', 'text-gray-400');
+        wdBtn.classList.remove('border-indigo-500', 'text-indigo-600');
+        wdBtn.classList.add('border-transparent', 'text-gray-400');
+    }
+    renderList();
+}
+
+function renderList() {
+    const container = document.getElementById('routineContainer');
+    container.innerHTML = "";
+    
+    const items = allData[currentTab] || [];
+    
+    if(items.length === 0) {
+        container.innerHTML = `<p class="text-gray-400 italic text-center py-4">このカテゴリの固定予定はまだありません。</p>`;
+        return;
+    }
+
+    items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center";
+        div.innerHTML = `
+            <div>
+                <p class="font-bold text-gray-800">${item.name}</p>
+                <p class="text-sm text-gray-400">${item.time}</p>
+            </div>
+            <button onclick="deleteRoutine(${index})" class="text-red-300 hover:text-red-500 p-2">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function toggleForm() {
+    const form = document.getElementById('routineForm');
+    const btn = document.getElementById('addBtn');
+    form.classList.toggle('hidden');
+    btn.classList.toggle('hidden');
+}
+
+function addRoutine() {
+    const name = document.getElementById('rName').value;
+    const time = document.getElementById('rTime').value;
+    if(!name || !time) return alert("入力してください");
+    
+    allData[currentTab].push({ name, time });
+    
+    renderList();
+    document.getElementById('rName').value = "";
+    document.getElementById('rTime').value = "";
+    toggleForm();
+}
+
+function deleteRoutine(index) {
+    if(!confirm("この予定を削除しますか？")) return;
+    allData[currentTab].splice(index, 1);
+    renderList();
+}
+
+async function saveAll() {
+    allData.personality = document.getElementById('personalityInput').value;
+
+    const res = await fetch('/api/save_routines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(allData)
+    });
+    
+    if(res.ok) {
+        alert("設定を保存しました。");
+    } else {
+        alert("保存に失敗しました。");
+    }
+}
+</script>
+{% endblock %}
