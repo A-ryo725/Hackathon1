@@ -1,8 +1,9 @@
+# インポート
 import os
 import json
 import calendar
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template, session
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -23,27 +24,28 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Firebase初期化
 KEY_PATH = "firebase_key.json"
-db = None
 if os.path.exists(KEY_PATH):
     if not firebase_admin._apps:
         cred = credentials.Certificate(KEY_PATH)
         firebase_admin.initialize_app(cred)
-    db = firestore.client()
+db = firestore.client()
 
 # Index.htmlにアクセスした時
 @app.route('/')
 def index():
-    today_str = datetime.now().strftime('%Y-%m-%d')
+    now = datetime.now()
+    today_display = f"{now.month}月{now.day}日"
+    today_str = now.strftime('%Y-%m-%d')
     schedule_data = []
     if db:
         doc = db.collection('history').document(today_str).get()
         if doc.exists:
             schedule_data = doc.to_dict().get('schedule', [])
     
-    return render_template('index.html', schedule=schedule_data)
+    return render_template('index.html', schedule=schedule_data, today=today_display)
 
-# ルーティンと性格データを取得
-@app.route('/routine')
+# routines.htmlにアクセスした時 
+@app.route('/routine') # AI使用 平日と休日でルーティンを分けるために使用した。また、ユーザーの性格を考慮するため。
 def routine_page():
     data = {"weekday": [], "weekend": [], "personality": ""}
     if db:
@@ -53,32 +55,27 @@ def routine_page():
     return render_template('routines.html', routines=data)
 
 # calendar.htmlにアクセスした時
-@app.route('/calendar')
+@app.route("/calendar")
 def calendar_page():
-    now = datetime.now()
-    year = request.args.get('year', default=now.year, type=int)
-    month = request.args.get('month', default=now.month, type=int)
-    today_day = now.day if (year == now.year and month == now.month) else None
+    nowtime = datetime.now()
+    year = int(request.args.get('year', nowtime.year))
+    month = int(request.args.get('month', nowtime.month))
+    today = 1
+    if year == nowtime.year and month == nowtime.month:
+        today = nowtime.day
+    cal = calendar.Calendar(firstweekday=6)
+#AI
+    month_days = [day if day != 0 else '' for week in cal.monthdayscalendar(year, month) for day in week]
+    prev_date = datetime(year, month, 1) - timedelta(days=1)
+    next_date = datetime(year, month, 28) + timedelta(days=5) # 確実に翌月へ
+#AI
+    return render_template('calendar.html', 
+        year=year, month=month, today=today, 
+        cal_days=month_days,  # HTML側の名前に合わせる
+        prev_year=prev_date.year, prev_month=prev_date.month,
+        next_year=next_date.year, next_month=next_date.month)
 
-    first_weekday, num_days = calendar.monthrange(year, month)
-    start_blank_days = (first_weekday + 1) % 7
-    cal_days = [''] * start_blank_days + list(range(1, num_days + 1))
-    
-    prev_month = month - 1 if month > 1 else 12
-    prev_year = year if month > 1 else year - 1
-    next_month = month + 1 if month < 12 else 1
-    next_year = year if month < 12 else year + 1
-
-    return render_template(
-        'calendar.html', 
-        cal_days=cal_days, 
-        year=year, 
-        month=month, 
-        today=today_day,
-        prev_year=prev_year, prev_month=prev_month,
-        next_year=next_year, next_month=next_month
-    )
-
+# achievement.htmlにアクセスした時
 @app.route('/achievement')
 def achievement_page():
     if not db: return "DB Error", 500
@@ -116,7 +113,7 @@ def achievement_page():
         days_in_month=num_days
     )
 
-# settings/routines に上書き保存
+# 上書き保存
 @app.route('/api/save_routines', methods=['POST'])
 def save_routines():
     data = request.json
@@ -197,9 +194,9 @@ def toggle_task():
             
     return jsonify({"error": "Data not found"}), 404
 
-@app.route('/api/claim_fruit', methods=['POST']) #AI使用
+@app.route('/api/claim_fruit', methods=['POST']) #AI使用 タスクの達成度に応じてフルーツを獲得できるようにするために使用した
 def claim_fruit():
-    fruit_types = ['🍎', '🍊', '🍇','🍒']
+    fruit_types = ['🍎', '🍊', '🍇','🍒', '🍑']
     new_fruit = random.choice(fruit_types)
     
     today_str = datetime.now().strftime('%Y-%m-%d')

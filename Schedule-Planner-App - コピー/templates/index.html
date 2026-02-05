@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="text-2xl font-bold mb-6">今日のタスクを入力</h2>
+<h2 class="text-2xl font-bold mb-6">{{ today }}のタスクを入力</h2>
 
 <div class="bg-white p-6 rounded-none shadow-sm border max-w-2xl mb-8">
     <div class="flex gap-2 mb-4">
         <input type="text" id="taskName" placeholder="例：読書" class="flex-1 border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
         <input type="number" id="taskDuration" value="60" class="w-20 border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
-        <button onclick="addTask()" class="bg-indigo-300 text-black px-6 py-2 border-2 border-black font-bold shadow-[1px_1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">追加</button>
+        <button onclick="addTask()" class="bg-blue-300 text-black px-6 py-2 border-2 border-black font-bold shadow-[2px_2px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">追加</button>
     </div>
 
     <div id="taskList" class="space-y-2 mb-6"></div>
 
-    <button id="genBtn" onclick="generate()" class="w-full bg-indigo-500 text-white py-3 rounded-lg font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-200">
+    <button id="genBtn" onclick="generate()" class="w-full bg-blue-500 text-white py-3 rounded-2xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-indigo-200">
         スケジュール作成
     </button>
 </div>
@@ -46,7 +46,7 @@ function addTask() {
 async function generate() {
     if(tasks.length === 0) return alert("タスクを入力してください");
     const btn = document.getElementById('genBtn');
-    btn.innerText = "AI思考中...";
+    btn.innerText = "AIが頑張っています...";
     btn.disabled = true;
 
     try {
@@ -92,14 +92,13 @@ function renderResult(schedule) {
         div.innerHTML = `
             <span class="font-mono text-gray-500 font-bold w-12 text-sm">${item.time}</span>
             <span class="font-bold text-gray-700 flex-1">${item.task}</span>
-            <span class="text-[10px] px-2 py-0.5 rounded font-bold ${badgeClass}">${item.type.toUpperCase()}</span>
         `;
         list.appendChild(div);
     });
 }
 
 
-window.onload = () => { //ページ読み込み時に、今日のデータがあれば表示する
+window.onload = () => {
     const initData = JSON.parse(document.getElementById('init-schedule').textContent);
     if(initData.length > 0) {
         renderResult(initData);

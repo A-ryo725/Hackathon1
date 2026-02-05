@@ -15,7 +15,7 @@
     <div id="taskContainer" class="space-y-4 mb-16">
         </div>
 
-    <div class="bg-white rounded-3xl p-8 text-center relative overflow-hidden min-h-[500px] border border-gray-100 shadow-sm flex flex-col items-center">
+    <div class="bg-none rounded-3xl p-8 text-center relative overflow-hidden min-h-[500px] border border-none flex flex-col items-center">
         <h3 class="text-gray-700 font-bold mb-4 relative z-10">タスクの木</h3>
         
         <div class="relative flex-1 w-full flex justify-center items-end">
@@ -53,7 +53,6 @@ renderTasks();
 updateProgress();
 
 function getGroupedTasks() {
-    // Todoのみ抽出し、タスク名でグループ化
     const groups = {};
     schedule.forEach((item, index) => {
         if (item.type !== 'todo') return;
@@ -114,16 +113,13 @@ function renderTasks() {
 
 // グループ単位で一括切り替え
 async function toggleGroup(indices, newState) {
-    // 1. ローカルの状態を一括更新
     indices.forEach(index => {
         schedule[index].done = newState;
     });
 
-    // 2. UI再描画
     renderTasks();
     updateProgress();
 
-    // 3. APIへ一括送信
     const promises = indices.map(index => 
         fetch('/api/toggle_task', {
             method: 'POST',
