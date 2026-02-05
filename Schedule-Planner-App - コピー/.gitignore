@@ -1,8 +1,10 @@
-# --- セキュリティ・秘密情報 (絶対に共有してはいけないファイル) ---
+# --- セキュリティ・機密情報 (GitHub等に絶対アップロードしない) ---
 .env
+*.json
+# Firebaseの鍵を特定して除外する場合
 firebase_key.json
 
-# --- Python 関連 ---
+# --- Python 関連 (仮想環境やキャッシュ) ---
 __pycache__/
 *.py[cod]
 *$py.class
@@ -11,25 +13,16 @@ venv/
 .venv/
 env/
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
 
 # --- エディタ・OS 関連 ---
 .vscode/
 .idea/
-*.swp
-*.swo
 .DS_Store
 Thumbs.db
+*.swp
+
+# --- Flask/ログ 関連 ---
+instance/
+.webassets-cache
