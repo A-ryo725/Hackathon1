@@ -60,6 +60,8 @@ async function generate() {
             const data = await res.json();
             renderResult(data.schedule);
             document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+            tasks = []; // 内部データを空にする
+            document.getElementById('taskList').innerHTML = "";
         }
     } catch(e) {
         alert("エラーが発生しました");
