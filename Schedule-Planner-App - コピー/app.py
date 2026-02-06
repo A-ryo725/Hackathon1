@@ -1,4 +1,3 @@
-# インポート
 import os
 import json
 import calendar
@@ -64,14 +63,13 @@ def calendar_page():
     if year == nowtime.year and month == nowtime.month:
         today = nowtime.day
     cal = calendar.Calendar(firstweekday=6)
-#AI
+#AI使用 カレンダーの月をめくる際の処理を行うため
     month_days = [day if day != 0 else '' for week in cal.monthdayscalendar(year, month) for day in week]
     prev_date = datetime(year, month, 1) - timedelta(days=1)
     next_date = datetime(year, month, 28) + timedelta(days=5) # 確実に翌月へ
-#AI
     return render_template('calendar.html', 
         year=year, month=month, today=today, 
-        cal_days=month_days,  # HTML側の名前に合わせる
+        cal_days=month_days,
         prev_year=prev_date.year, prev_month=prev_date.month,
         next_year=next_date.year, next_month=next_date.month)
 
@@ -194,7 +192,8 @@ def toggle_task():
             
     return jsonify({"error": "Data not found"}), 404
 
-@app.route('/api/claim_fruit', methods=['POST']) #AI使用 タスクの達成度に応じてフルーツを獲得できるようにするために使用した
+#AI使用 タスクの達成度に応じてフルーツを獲得できるようにするために使用した
+@app.route('/api/claim_fruit', methods=['POST']) 
 def claim_fruit():
     fruit_types = ['🍎', '🍊', '🍇','🍒', '🍑']
     new_fruit = random.choice(fruit_types)

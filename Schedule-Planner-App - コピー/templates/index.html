@@ -5,7 +5,7 @@
 <div class="bg-white p-6 rounded-none shadow-sm border max-w-2xl mb-8">
     <div class="flex gap-2 mb-4">
         <input type="text" id="taskName" placeholder="例：読書" class="flex-1 border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
-        <input type="number" id="taskDuration" value="60" class="w-20 border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
+        <input type="number" id="taskDuration" value="0" class="w-20 border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none">
         <button onclick="addTask()" class="bg-blue-300 text-black px-6 py-2 border-2 border-black font-bold shadow-[2px_2px_1px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">追加</button>
     </div>
 
@@ -86,6 +86,9 @@ function renderResult(schedule) {
         if (item.type === 'fixed') {
             bgClass = "bg-orange-50 border-orange-100";
             badgeClass = "bg-orange-100 text-orange-600";
+        } elif (item.type === 'break') {
+            bgClass = "bg-green-50 border-green-100";
+            badgeClass = "bg-green-100 text-green-600";
         }
 
         div.className = `flex gap-4 items-center p-3 rounded-xl shadow-sm border ${bgClass}`;
