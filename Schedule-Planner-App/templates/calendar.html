@@ -110,7 +110,7 @@ async function loadHistory(date, btnElement) {
             const div = document.createElement('div');
             let bgClass = "bg-indigo-50 border-indigo-100"; //タイプで色分け
             if (item.type === 'fixed') bgClass = "bg-orange-50 border-orange-100";
-            if (item.task.includes("食事")) bgClass = "bg-yellow-50 border-yellow-100";
+            if (item.type === 'break') bgClass = "bg-green-50 border-green-100";            
 
             div.className = `flex justify-between items-center p-4 rounded-xl border ${bgClass} transition-transform hover:scale-[1.02]`;
             div.innerHTML = `
